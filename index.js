@@ -4,17 +4,34 @@
  * - https://dev.to/code_passion/creating-a-draggable-element-using-html-css-and-javascript-54g7 (dragging code)
  */
 
+"use strict";
+
 class Item {
-  constructor(id, url, alt, under, x, y, w, h) {
-    this.offsetX = x;
-    this.offsetY = y;
+  constructor(id, url, alt, under, x, y, w, h, z = 0) {
     this.id = id;
+
+    /* Flags */
+    this.flagFirstGrabbed = false;
+    this.flagFirstDropped = false;
+
+    /* Callbacks */
+    this.firstGrabbedCallback = null;
+    this.firstDroppedCallback = null;
+
+    this.grabbedCallback = null;
+    this.droppedCallback = null;
 
     this.startDragging = (e) => {
       e.preventDefault();
 
-      console.log("start drag");
-      this.element = document.getElementById(this.id);
+      if (!this.flagFirstGrabbed) {
+        this.flagFirstGrabbed = true;
+        this.firstGrabbedCallback?.();
+      }
+
+      this.grabbedCallback?.();
+
+      this.element = this.getElement();
 
       this.offsetX = e.clientX - this.element.getBoundingClientRect().left;
       this.offsetY = e.clientY - this.element.getBoundingClientRect().top;
@@ -25,7 +42,6 @@ class Item {
 
     this.dragElement = (e) => {
       e.preventDefault();
-      console.log("drag element");
 
       const x = e.clientX - this.offsetX;
       const y = e.clientY - this.offsetY;
@@ -35,19 +51,26 @@ class Item {
     };
 
     this.stopDragging = () => {
-      this.element.classList.remove("dragging");
-      document.removeEventListener("mousemove", this.dragElement);
+      if (!this.flagFirstDropped) {
+        this.flagFirstDropped = true;
+        this.firstDroppedCallback?.();
+      }
 
+      this.droppedCallback?.();
+
+      document.removeEventListener("mousemove", this.dragElement);
       this.element = null;
     };
 
-    this.create(id, url, alt, under, w, h);
+    this.create(id, url, alt, under, w, h, z);
+    this.moveTo(x, y);
   }
 
-  create(id, url, alt, under, w, h) {
+  create(id, url, alt, under, w, h, z) {
     const div = document.createElement("div");
     div.id = id;
     div.classList.add("item");
+    div.style.zIndex = z;
 
     const img = document.createElement("img");
     img.setAttribute("src", url);
@@ -64,6 +87,36 @@ class Item {
 
     under.appendChild(div);
   }
+
+  moveTo(x, y) {
+    const e = this.element ?? this.getElement();
+
+    this.offsetX = x;
+    this.offsetY = y;
+
+    e.style.left = this.offsetX + "px";
+    e.style.top = this.offsetY + "px";
+  }
+
+  setFirstGrabbedCallback(callback) {
+    this.firstGrabbedCallback = callback;
+  }
+
+  setFirstDroppedCallback(callback) {
+    this.firstDroppedCallback = callback;
+  }
+
+  setGrabbedCallback(callback) {
+    this.grabbedCallback = callback;
+  }
+
+  setDroppedCallback(callback) {
+    this.droppedCallback = callback;
+  }
+
+  getElement() {
+    return document.getElementById(this.id);
+  }
 }
 
 const i = new Item(
@@ -71,8 +124,8 @@ const i = new Item(
   "assets/img_tomb_key.png",
   "An icy key",
   document.getElementById("pivot"),
-  0,
-  0,
+  600,
+  400,
   64,
   64,
 );
