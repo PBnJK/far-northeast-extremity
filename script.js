@@ -8,11 +8,11 @@
 
 const main = document.getElementById("main");
 
-let oldWindowInnerWidth = window.innerWidth;
-
 class Item {
   constructor(id, url, alt, x, y, w, h, z = 0) {
     this.id = id;
+
+    this.oldWindowInnerWidth = window.innerWidth;
 
     this.offsetX = 0;
     this.offsetY = 0;
@@ -95,14 +95,15 @@ class Item {
     div.addEventListener("mouseup", this.stopDragging);
 
     window.addEventListener("resize", () => {
+      console.log("CALLED");
       const e = this.element ?? this.getElement();
       const rect = e.getBoundingClientRect();
 
       const oldX = rect.left;
-      const w = window.innerWidth - oldWindowInnerWidth;
+      const w = window.innerWidth - this.oldWindowInnerWidth;
       const newX = w / 2 + oldX;
 
-      oldWindowInnerWidth = window.innerWidth;
+      this.oldWindowInnerWidth = window.innerWidth;
       this.moveTo(newX, rect.top);
     });
 
