@@ -1,39 +1,78 @@
 /* The script
  *
+ * Thanks to:
+ * - https://dev.to/code_passion/creating-a-draggable-element-using-html-css-and-javascript-54g7 (dragging code)
  */
 
 class Item {
-  offsetX = 0;
-  offsetY = 0;
+  constructor(id, url, alt, under, x, y, w, h) {
+    this.offsetX = x;
+    this.offsetY = y;
+    this.id = id;
 
-  constructor(element) {
-    element.onmousedown = this.startDragging;
-    element.onmouseup = this.stopDragging;
-    this.element = element;
+    this.startDragging = (e) => {
+      e.preventDefault();
+
+      console.log("start drag");
+      this.element = document.getElementById(this.id);
+
+      this.offsetX = e.clientX - this.element.getBoundingClientRect().left;
+      this.offsetY = e.clientY - this.element.getBoundingClientRect().top;
+      this.element.classList.add("dragging");
+
+      document.addEventListener("mousemove", this.dragElement);
+    };
+
+    this.dragElement = (e) => {
+      e.preventDefault();
+      console.log("drag element");
+
+      const x = e.clientX - this.offsetX;
+      const y = e.clientY - this.offsetY;
+
+      this.element.style.left = x + "px";
+      this.element.style.top = y + "px";
+    };
+
+    this.stopDragging = () => {
+      this.element.classList.remove("dragging");
+      document.removeEventListener("mousemove", this.dragElement);
+
+      this.element = null;
+    };
+
+    this.create(id, url, alt, under, w, h);
   }
 
-  startDragging(e) {
-    e.preventDefault();
+  create(id, url, alt, under, w, h) {
+    const div = document.createElement("div");
+    div.id = id;
+    div.classList.add("item");
 
-    this.offsetX = e.clientX - this.element.getBoundingClientRect().left;
-    this.offsetY = e.clientY - this.element.getBoundingClientRect().top;
-    this.element.classList.add("dragging");
+    const img = document.createElement("img");
+    img.setAttribute("src", url);
+    img.setAttribute("alt", alt);
 
-    document.addEventListener("mousemove", this.dragElement);
-  }
+    if (w) img.setAttribute("width", w);
+    if (h) img.setAttribute("height", h);
 
-  dragElement(e) {
-    e.preventDefault();
+    img.classList.add("item-img");
 
-    const x = e.clientX - this.offsetX;
-    const y = e.clientY - this.offsetY;
+    div.appendChild(img);
+    div.addEventListener("mousedown", this.startDragging);
+    div.addEventListener("mouseup", this.stopDragging);
 
-    this.element.style.left = x + "px";
-    this.element.style.top = y + "px";
-  }
-
-  stopDragging() {
-    this.element.classList.remove("dragging");
-    document.removeEventListener("mousemove", this.dragElement);
+    under.appendChild(div);
   }
 }
+
+const i = new Item(
+  "tomb_key",
+  "assets/img_tomb_key.png",
+  "An icy key",
+  document.getElementById("pivot"),
+  0,
+  0,
+  64,
+  64,
+);
