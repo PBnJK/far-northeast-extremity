@@ -1,0 +1,112 @@
+html,
+body {
+  background: center/64px url("assets/img_bg_snowflake.png");
+
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+#wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+#header-box {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+
+  width: 1024px;
+  height: 80px;
+
+  margin-top: 16px;
+
+  background-color: #fff0cc;
+
+  border: 12px solid #e60f0f;
+  border-radius: 16px;
+}
+
+#header-text {
+  color: #e60f0f;
+}
+
+.header-text-small {
+  color: black;
+
+  font-family: Arial;
+  font-size: 16pt;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+}
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  margin-top: 16px;
+
+  background-color: #fff0cc;
+
+  border: 16px solid #e60f0f;
+  border-radius: 16px;
+}
+
+.inner-description {
+  align-self: center;
+  margin-top: 32px;
+  margin-bottom: 0;
+
+  font-family: "National Park", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+
+  font-size: 20pt;
+}
+
+.inner-image {
+  padding: 24px;
+  pointer-events: none; /* Avoid image picking */
+}
+
+.center-self {
+  align-self: center;
+}
+
+/* Fonts */
+.allerta-stencil {
+  font-family: "Allerta Stencil", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+
+  align-self: center;
+}
+
+.national-park {
+  font-family: "National Park", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Items */
+.item {
+  position: absolute;
+  cursor: grab;
+  text-align: center;
+  user-select: none;
+}
+
+.item.dragging {
+  cursor: grabbing;
+}
+
+.item-img {
+  pointer-events: none;
+}
