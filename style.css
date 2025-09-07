@@ -1,6 +1,6 @@
 html,
 body {
-  background: center/64px url("assets/img_bg_snowflake.png");
+  background: center/128px url("assets/img_bg_snowflake.png");
 
   width: 100%;
   height: 100%;
@@ -41,7 +41,18 @@ body {
 
 main {
   display: flex;
+  flex-direction: column;
   justify-content: center;
+  align-items: center;
+
+  margin: 0 auto;
+  padding: 64px 0;
+
+  width: 1024px;
+}
+
+#items {
+  align-self: start;
 }
 
 .zone {
@@ -64,7 +75,7 @@ main {
 
   font-family: "National Park", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 400;
+  font-weight: 600;
   font-style: normal;
 
   font-size: 20pt;
