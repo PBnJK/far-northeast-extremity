@@ -13,6 +13,8 @@ const main = document.getElementById("main");
 const itemsDiv = document.getElementById("items");
 const itemsDivRect = itemsDiv.getBoundingClientRect();
 
+const popup = document.getElementById("popup");
+
 const BASE_WINDOW_WIDTH = 1280;
 const BASE_WINDOW_HEIGHT = 720;
 
@@ -114,7 +116,7 @@ class Item {
     div.style.zIndex = z;
 
     const img = document.createElement("img");
-    img.setAttribute("src", url);
+    img.setAttribute("src", url ? url : "assets/img_hidden.png");
     img.setAttribute("alt", alt);
 
     if (w) img.setAttribute("width", w);
@@ -189,9 +191,80 @@ class Item {
   }
 }
 
-function addZone(description, url, alt) {
+function clearPopup() {
+  const e = document.getElementById("popup-content");
+  while (e.firstChild) {
+    e.removeChild(e.lastChild);
+  }
+
+  return e;
+}
+
+function showTextPopup(title, description) {
+  const e = clearPopup();
+
+  const h2 = document.createElement("h2");
+  h2.innerHTML = title;
+  h2.id = "popup-title";
+  h2.classList.add("national-park");
+
+  const p = document.createElement("p");
+  p.innerHTML = description;
+  p.id = "popup-description";
+  p.classList.add("national-park");
+
+  e.appendChild(h2);
+  e.appendChild(p);
+
+  const dialog = document.getElementById("popup");
+  dialog.showModal();
+}
+
+function showImagePopup(title, url, alt, description) {
+  const e = clearPopup();
+
+  const h2 = document.createElement("h2");
+  h2.innerHTML = title;
+  h2.id = "popup-title";
+  h2.classList.add("national-park");
+
+  const img = document.createElement("img");
+  img.setAttribute("src", url);
+  img.setAttribute("alt", alt);
+  img.id = "popup-image";
+
+  const p = document.createElement("p");
+  p.innerHTML = description;
+  p.id = "popup-description";
+  p.classList.add("national-park");
+
+  e.appendChild(h2);
+  e.appendChild(img);
+  e.appendChild(p);
+
+  const dialog = document.getElementById("popup");
+  dialog.showModal();
+}
+
+function showCustomPopup(title, html) {
+  const e = clearPopup();
+  e.innerHTML = html;
+
+  const h2 = document.createElement("h2");
+  h2.innerHTML = title;
+  h2.id = "popup-title";
+  h2.classList.add("national-park");
+
+  e.prepend(h2);
+
+  const dialog = document.getElementById("popup");
+  dialog.showModal();
+}
+
+function addZone(id, description, url, alt) {
   const div = document.createElement("div");
   div.classList.add("zone");
+  div.id = id;
 
   const p = document.createElement("p");
   p.classList.add("inner-description");
@@ -308,14 +381,115 @@ function spawnBunkerHatch() {
   spawnItem(hatch);
 }
 
+function spawnReceptionDeskPapers() {
+  const reception_desk_papers = new Item(
+    "reception_desk_papers",
+    "",
+    "Some papers strewn over the reception desk",
+    736,
+    1124,
+    96,
+    64,
+  );
+
+  reception_desk_papers.setGrabbable(false);
+  reception_desk_papers.setGrabbedCallback(() => {
+    showTextPopup(
+      "MEMO",
+      `
+Don't look at the date of this memo.<br/>
+Don't look at the date on yesterday's either.<br/>
+If you get any more memos with my name on them, they're not me.<br/><br/>
+
+You're all officially discharged and are urged to leave immediately.<br/><br/>
+
+Don't bother packing.<br/><br/>
+
+FNESB Director<br/>
+Job Tanner
+`,
+    );
+  });
+
+  spawnItem(reception_desk_papers);
+}
+
+function spawnPottedPlantKey() {
+  const potted_plant_key = new Item(
+    "potted_plant_key",
+    "assets/img_potted_plant_key.png",
+    "A dirty key",
+    224,
+    1162,
+  );
+
+  spawnItem(potted_plant_key);
+}
+
+function spawnPottedPlant() {
+  const potted_plant = new Item(
+    "potted_plant",
+    "",
+    "Barely visible in the dirt, a silver something, glimmering...",
+    192,
+    1130,
+    24,
+    24,
+  );
+
+  potted_plant.setGrabbable(false);
+  potted_plant.setFirstGrabbedCallback(() => {
+    playAudio("assets/snd_key_found.mp3");
+    spawnPottedPlantKey();
+  });
+
+  spawnItem(potted_plant);
+}
+
+function spawnKeypad() {
+  const keypad = new Item(
+    "keypad",
+    "assets/img_keypad.png",
+    "A numerical keypad",
+    560,
+    1700,
+    64,
+    64,
+  );
+
+  keypad.setGrabbable(false);
+  keypad.setGr;
+
+  spawnItem(keypad);
+}
+
+function spawnSafeDoor() {}
+
 function addBunkerReceptionZone() {
   spawnBunkerHatch();
   playAudio("assets/snd_clue_stinger.mp3");
+
+  /* In case they didn't pull off the sign paper */
+  document.title = "The FNESB";
+
   addZone(
+    "reception_top",
     "Woah...",
     "assets/img_bg_reception_top.png",
     "A quaint little reception area. There's a desk and everything.",
   );
+
+  addZone(
+    "reception_bottom",
+    "...a reception?",
+    "assets/img_bg_reception_bottom.png",
+    "The other side of the reception.",
+  );
+
+  spawnReceptionDeskPapers();
+  spawnPottedPlant();
+  spawnKeypad();
+  spawnSafeDoor();
 }
 
 function init() {
@@ -323,6 +497,11 @@ function init() {
   spawnFrozenTombSign();
   spawnSmallRock();
   spawnEntranceButton();
+
+  const closePopupButton = document.getElementById("popup-close");
+  closePopupButton.onclick = () => {
+    popup.close();
+  };
 }
 
 init();

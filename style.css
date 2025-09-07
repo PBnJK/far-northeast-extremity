@@ -51,10 +51,6 @@ main {
   width: 1024px;
 }
 
-#items {
-  align-self: start;
-}
-
 .zone {
   display: flex;
   flex-direction: column;
@@ -90,6 +86,25 @@ main {
   align-self: center;
 }
 
+#popup {
+  width: 1024px;
+  min-height: 320px;
+}
+
+#popup::backdrop {
+  background-color: #00000088;
+}
+
+#popup-title {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 800;
+}
+
+#popup-description {
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 400;
+}
+
 /* Fonts */
 .allerta-stencil {
   font-family: "Allerta Stencil", sans-serif;
@@ -107,6 +122,10 @@ main {
 }
 
 /* Items */
+#items {
+  align-self: start;
+}
+
 .item {
   position: absolute;
   cursor: grab;
