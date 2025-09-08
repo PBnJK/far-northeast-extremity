@@ -95,6 +95,11 @@ main {
   background-color: #00000088;
 }
 
+#popup-content {
+  display: flex;
+  flex-direction: column;
+}
+
 #popup-title {
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 800;
@@ -103,6 +108,12 @@ main {
 #popup-description {
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 400;
+}
+
+#popup-image {
+  align-self: center;
+  border: 8px solid black;
+  border-radius: 16px;
 }
 
 /* Fonts */

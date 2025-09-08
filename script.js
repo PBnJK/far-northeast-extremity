@@ -6,7 +6,7 @@
 
 "use strict";
 
-const items = [];
+const items = new Map();
 
 const main = document.getElementById("main");
 
@@ -27,14 +27,19 @@ class Item {
     this.posX = 0;
     this.posY = 0;
 
+    this.rect = undefined;
+
     this.offsetX = 0;
     this.offsetY = 0;
+
+    this.collideWith = [];
 
     /* Flags */
     this.flagGrabbed = false;
     this.flagGrabbable = true;
     this.flagFirstGrabbed = false;
     this.flagFirstDropped = false;
+    this.flagCheckCollisions = false;
 
     /* Callbacks */
     this.firstGrabbedCallback = null;
@@ -44,17 +49,6 @@ class Item {
     this.droppedCallback = null;
 
     this.hoverCallback = () => {};
-
-    this.scrollCallback = () => {
-      if (!this.flagGrabbed) {
-        return;
-      }
-
-      const e = this.element ?? this.getElement();
-
-      this.posY += window.screenY;
-      e.style.top = this.posY + "px";
-    };
 
     this.startDragging = (e) => {
       e.preventDefault();
@@ -68,9 +62,9 @@ class Item {
       if (this.flagGrabbable) {
         this.element = this.getElement();
 
-        const rect = this.element.getBoundingClientRect();
-        this.offsetX = e.clientX - rect.left;
-        this.offsetY = e.clientY - window.scrollY - rect.top;
+        this.rect = this.element.getBoundingClientRect();
+        this.offsetX = e.clientX - this.rect.left;
+        this.offsetY = e.clientY - window.scrollY - this.rect.top;
         this.element.classList.add("dragging");
 
         document.addEventListener("mousemove", this.dragElement);
@@ -84,9 +78,26 @@ class Item {
 
       this.posX = e.clientX - this.offsetX;
       this.posY = e.clientY - this.offsetY;
+      this.rect = this.element.getBoundingClientRect();
 
       this.element.style.left = this.posX + "px";
       this.element.style.top = this.posY + "px";
+
+      if (this.flagCheckCollisions) {
+        for (const [el, callback] of this.collideWith) {
+          const rect = el.getElement().getBoundingClientRect();
+          if (
+            !(
+              rect.top > this.rect.bottom ||
+              rect.right < this.rect.left ||
+              rect.bottom < this.rect.top ||
+              rect.left > this.rect.right
+            )
+          ) {
+            callback(self, el);
+          }
+        }
+      }
     };
 
     this.stopDragging = () => {
@@ -104,8 +115,19 @@ class Item {
       this.element = null;
     };
 
-    this.create(id, url, alt, itemsDiv, w, h, z);
+    this.resizeCallback = () => {
+      const e = this.element ?? this.getElement();
+      const rect = e.getBoundingClientRect();
 
+      const oldX = rect.left;
+      const w = window.innerWidth - this.oldWindowInnerWidth;
+      const newX = w / 2 + oldX;
+
+      this.oldWindowInnerWidth = window.innerWidth;
+      this.moveTo(newX, rect.top);
+    };
+
+    this.create(id, url, alt, itemsDiv, w, h, z);
     this.moveTo(x + itemsDivRect.left, y + itemsDivRect.top);
   }
 
@@ -129,21 +151,23 @@ class Item {
     div.addEventListener("mouseup", this.stopDragging);
     div.addEventListener("mouseenter", this.hoverCallback);
 
-    window.addEventListener("resize", () => {
-      const e = this.element ?? this.getElement();
-      const rect = e.getBoundingClientRect();
-
-      const oldX = rect.left;
-      const w = window.innerWidth - this.oldWindowInnerWidth;
-      const newX = w / 2 + oldX;
-
-      this.oldWindowInnerWidth = window.innerWidth;
-      this.moveTo(newX, rect.top);
-    });
-
-    window.addEventListener("scroll", this.scrollCallback);
+    window.addEventListener("resize", this.resizeCallback);
+    window.addEventListener("scroll", this.stopDragging);
 
     under.appendChild(div);
+  }
+
+  remove() {
+    const e = this.getElement();
+
+    e.removeEventListener("mousedown", this.startDragging);
+    e.removeEventListener("mouseup", this.stopDragging);
+    e.removeEventListener("mouseenter", this.hoverCallback);
+
+    e.remove();
+
+    window.removeEventListener("resize", this.resizeCallback);
+    window.removeEventListener("scroll", this.stopDragging);
   }
 
   moveTo(x, y) {
@@ -155,8 +179,15 @@ class Item {
     this.posX = this.offsetX = x;
     this.posY = this.offsetY = y + window.screenY;
 
+    this.rect = e.getBoundingClientRect();
+
     e.style.left = this.offsetX + "px";
     e.style.top = this.offsetY + "px";
+  }
+
+  reportCollisionsWith(el, callback) {
+    this.flagCheckCollisions = true;
+    this.collideWith.push([el, callback]);
   }
 
   setGrabbable(grabbable) {
@@ -287,7 +318,18 @@ function playAudio(src) {
 }
 
 function spawnItem(item) {
-  items.push(item);
+  items.set(item.id, item);
+}
+
+function destroyItem(id) {
+  const e = findItem(id);
+  e.remove();
+
+  items.delete(id);
+}
+
+function findItem(id) {
+  return items.get(id);
 }
 
 function spawnNormalPaper() {
@@ -421,7 +463,15 @@ function spawnPottedPlantKey() {
     "A dirty key",
     224,
     1162,
+    64,
+    64,
   );
+
+  potted_plant_key.reportCollisionsWith(findItem("safe_door"), () => {
+    destroyItem("safe_door");
+    destroyItem("potted_plant_key");
+    playAudio("assets/snd_key_found.mp3");
+  });
 
   spawnItem(potted_plant_key);
 }
@@ -458,12 +508,32 @@ function spawnKeypad() {
   );
 
   keypad.setGrabbable(false);
-  keypad.setGr;
+  keypad.setGrabbedCallback(() => {});
 
   spawnItem(keypad);
 }
 
-function spawnSafeDoor() {}
+function spawnSafeDoor() {
+  const safe_door = new Item(
+    "safe_door",
+    "assets/img_safe_door.png",
+    "A reinforced safe door",
+    384,
+    1804,
+  );
+
+  safe_door.setGrabbable(false);
+  safe_door.setGrabbedCallback(() => {
+    showImagePopup(
+      "Safe",
+      "assets/img_safe_door_popup.png",
+      "Close-up of the safe's keyhole",
+      "It appears that the safe is protected by some sort of cartoony key...",
+    );
+  });
+
+  spawnItem(safe_door);
+}
 
 function addBunkerReceptionZone() {
   spawnBunkerHatch();
