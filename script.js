@@ -18,6 +18,8 @@ const popup = document.getElementById("popup");
 const BASE_WINDOW_WIDTH = 1280;
 const BASE_WINDOW_HEIGHT = 720;
 
+let popupCustomClass = "";
+
 class Item {
   constructor(id, url, alt, x, y, w, h, z = 0) {
     this.id = id;
@@ -124,7 +126,10 @@ class Item {
       const newX = w / 2 + oldX;
 
       this.oldWindowInnerWidth = window.innerWidth;
-      this.moveTo(newX, rect.top);
+
+      this.posX = this.offsetX = newX;
+      this.rect = e.getBoundingClientRect();
+      e.style.left = this.offsetX + "px";
     };
 
     this.create(id, url, alt, itemsDiv, w, h, z);
@@ -158,6 +163,10 @@ class Item {
   }
 
   remove() {
+    if (this.flagGrabbed) {
+      this.stopDragging();
+    }
+
     const e = this.getElement();
 
     e.removeEventListener("mousedown", this.startDragging);
@@ -172,9 +181,6 @@ class Item {
 
   moveTo(x, y) {
     const e = this.element ?? this.getElement();
-
-    this.offsetX = x;
-    this.offsetY = y + window.screenY;
 
     this.posX = this.offsetX = x;
     this.posY = this.offsetY = y + window.screenY;
@@ -231,7 +237,7 @@ function clearPopup() {
   return e;
 }
 
-function showTextPopup(title, description) {
+function showTextPopup(title, description, customClass) {
   const e = clearPopup();
 
   const h2 = document.createElement("h2");
@@ -247,8 +253,12 @@ function showTextPopup(title, description) {
   e.appendChild(h2);
   e.appendChild(p);
 
-  const dialog = document.getElementById("popup");
-  dialog.showModal();
+  if (customClass) {
+    popupCustomClass = customClass;
+    popup.classList.add(customClass);
+  }
+
+  popup.showModal();
 }
 
 function showImagePopup(title, url, alt, description) {
@@ -456,6 +466,216 @@ Job Tanner
   spawnItem(reception_desk_papers);
 }
 
+function spawnManillaFolder() {
+  const manilla_folder = new Item(
+    "manilla_folder",
+    "",
+    "A manilla folder full of documents",
+    224,
+    1836,
+    64,
+    24,
+  );
+
+  manilla_folder.setGrabbable(false);
+  manilla_folder.setGrabbedCallback(() => {
+    showTextPopup(
+      "Results of",
+      `worrying
+`,
+    );
+  });
+
+  spawnItem(manilla_folder);
+}
+
+function spawnPosterPopup() {
+  const poster_popup = new Item(
+    "poster_popup",
+    "",
+    "A lip on the poster",
+    576,
+    928,
+    16,
+    12,
+  );
+
+  poster_popup.setGrabbable(false);
+  poster_popup.setGrabbedCallback(() => {
+    showImagePopup(
+      "A note on the poster",
+      "assets/img_poster_popup.png",
+      "2 9 0 8 —",
+      "Scrawled behind the poster are some numbers:<br/>2 9 0 8 —",
+    );
+  });
+
+  spawnItem(poster_popup);
+}
+
+function spawnCarpetPopup() {
+  const carpet_popup = new Item(
+    "carpet_popup",
+    "",
+    "A fault in the carpet",
+    824,
+    1844,
+    16,
+    12,
+  );
+
+  carpet_popup.setGrabbable(false);
+  carpet_popup.setGrabbedCallback(() => {
+    showImagePopup(
+      "A note under the carpet",
+      "assets/img_carpet_popup.png",
+      "— 1 9 9 4",
+      "On a note hidden beneath the carpet are some numbers:<br/>—1 9 9 4",
+    );
+  });
+
+  spawnItem(carpet_popup);
+}
+
+function spawnTelephone() {
+  const telephone = new Item(
+    "telephone",
+    "",
+    "An old telephone",
+    736,
+    1080,
+    64,
+    32,
+  );
+
+  telephone.setGrabbable(false);
+  telephone.setGrabbedCallback(() => {
+    showCustomPopup(
+      "Dial a number",
+      `<form id="form-dial" onsubmit="return handleDial();">
+  <input id="input-dial" name="input-dial" type="text" readonly />
+  <div class="dial-keypad">
+    <button class="dial-button" id="dial-1">1</button>
+    <button class="dial-button" id="dial-2">2</button>
+    <button class="dial-button" id="dial-3">3</button>
+  </div>
+  <div class="dial-keypad">
+    <button class="dial-button" id="dial-4">4</button>
+    <button class="dial-button" id="dial-5">5</button>
+    <button class="dial-button" id="dial-6">6</button>
+  </div>
+  <div class="dial-keypad">
+    <button class="dial-button" id="dial-7">7</button>
+    <button class="dial-button" id="dial-8">8</button>
+    <button class="dial-button" id="dial-9">9</button>
+  </div>
+  <div class="dial-keypad">
+    <button class="dial-button" id="dial-X">X</button>
+    <button class="dial-button" id="dial-0">0</button>
+    <button class="dial-button" id="dial-OK">OK</button>
+  </div>
+</form>`,
+    );
+
+    const inputDial = document.getElementById("input-dial");
+
+    const keypadDelete = () => {
+      if (inputDial.value.length === 0) {
+        return;
+      }
+
+      if (inputDial.value.length === 6) {
+        inputDial.value = inputDial.value.slice(0, -2);
+      } else {
+        inputDial.value = inputDial.value.slice(0, -1);
+      }
+
+      playAudio("assets/snd_keyX.mp3");
+    };
+
+    const keypadSubmit = () => {
+      playAudio("assets/snd_keyOK.mp3");
+    };
+
+    const keypadType = (k) => {
+      if (inputDial.value.length >= 9) {
+        return;
+      }
+
+      if (inputDial.value.length === 4) {
+        inputDial.value += "-";
+      }
+      inputDial.value += k;
+
+      playAudio(`assets/snd_key${k}.mp3`);
+    };
+
+    const keypadHandler = (k) => {
+      switch (k) {
+        case "X":
+          keypadDelete();
+          break;
+        case "OK":
+          keypadSubmit();
+          break;
+        default:
+          keypadType(k);
+      }
+    };
+
+    for (let i = 0; i < 10; ++i) {
+      const e = document.getElementById("dial-" + i);
+      console.log("dial-" + i);
+      e.onclick = () => {
+        keypadHandler(i.toString());
+      };
+    }
+
+    const keyX = document.getElementById("dial-X");
+    keyX.onclick = () => {
+      keypadHandler("X");
+    };
+
+    const keyOK = document.getElementById("dial-OK");
+    keyOK.onclick = () => {
+      keypadHandler.bind("OK");
+    };
+  });
+
+  spawnItem(telephone);
+}
+
+function spawnStickyNote() {
+  const sticky_note = new Item(
+    "sticky_note",
+    "assets/img_sticky_note.png",
+    "A sticky note",
+    448,
+    1868,
+  );
+
+  sticky_note.setGrabbable(false);
+  sticky_note.setFirstGrabbedCallback(() => {
+    spawnPosterPopup();
+    spawnCarpetPopup();
+    spawnTelephone();
+  });
+  sticky_note.setGrabbedCallback(() => {
+    showTextPopup(
+      "Toby!",
+      `If you forget the keycode...<br/>
+...just trawl over the corners of your mind and you'll remember it.<br/><br/>
+(on the back)<br/>
+Tanner's been all over me with this op-sec stuff, says I'm on thin ice<br/>
+So throw this out when you read it! Seriously!!!
+`,
+      "popup-sticky-note",
+    );
+  });
+
+  spawnItem(sticky_note);
+}
+
 function spawnPottedPlantKey() {
   const potted_plant_key = new Item(
     "potted_plant_key",
@@ -470,7 +690,9 @@ function spawnPottedPlantKey() {
   potted_plant_key.reportCollisionsWith(findItem("safe_door"), () => {
     destroyItem("safe_door");
     destroyItem("potted_plant_key");
-    playAudio("assets/snd_key_found.mp3");
+    playAudio("assets/snd_safe_open.mp3");
+
+    spawnStickyNote();
   });
 
   spawnItem(potted_plant_key);
@@ -528,7 +750,7 @@ function spawnSafeDoor() {
       "Safe",
       "assets/img_safe_door_popup.png",
       "Close-up of the safe's keyhole",
-      "It appears that the safe is protected by some sort of cartoony key...",
+      "It appears that the safe is protected by some sort of cartoony key...<br/>Looks pretty dirty.",
     );
   });
 
@@ -557,9 +779,14 @@ function addBunkerReceptionZone() {
   );
 
   spawnReceptionDeskPapers();
+  spawnManillaFolder();
   spawnPottedPlant();
   spawnKeypad();
   spawnSafeDoor();
+}
+
+function handleDial() {
+  return false;
 }
 
 function init() {
@@ -571,6 +798,10 @@ function init() {
   const closePopupButton = document.getElementById("popup-close");
   closePopupButton.onclick = () => {
     popup.close();
+
+    if (popup.classList.contains(popupCustomClass)) {
+      popup.classList.remove(popupCustomClass);
+    }
   };
 }
 

@@ -95,6 +95,23 @@ main {
   background-color: #00000088;
 }
 
+#popup-close {
+  width: 32px;
+  height: 32px;
+
+  background-color: white;
+
+  float: right;
+
+  border: 3px solid black;
+  border-radius: 0;
+}
+
+#popup-close:hover {
+  cursor: pointer;
+  background-color: lightgrey;
+}
+
 #popup-content {
   display: flex;
   flex-direction: column;
@@ -114,6 +131,31 @@ main {
   align-self: center;
   border: 8px solid black;
   border-radius: 16px;
+}
+
+.popup-sticky-note {
+  border: 3px solid #9c6002;
+  background-color: #eabc0d;
+}
+
+#form-dial {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+#input-dial {
+  width: 120px;
+  pointer-events: none;
+}
+
+.dial-button {
+  width: 40px;
 }
 
 /* Fonts */
