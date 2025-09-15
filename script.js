@@ -11,8 +11,6 @@ const items = new Map();
 const main = document.getElementById("main");
 
 const itemsDiv = document.getElementById("items");
-const itemsDivRect = itemsDiv.getBoundingClientRect();
-
 const popup = document.getElementById("popup");
 
 const BASE_WINDOW_WIDTH = 1280;
@@ -133,7 +131,7 @@ class Item {
     };
 
     this.create(id, url, alt, itemsDiv, w, h, z);
-    this.moveTo(x + itemsDivRect.left, y + itemsDivRect.top);
+    this.moveTo(x, y);
   }
 
   create(id, url, alt, under, w, h, z) {
@@ -182,8 +180,9 @@ class Item {
   moveTo(x, y) {
     const e = this.element ?? this.getElement();
 
-    this.posX = this.offsetX = x;
-    this.posY = this.offsetY = y + window.screenY;
+    const itemsDivRect = itemsDiv.getBoundingClientRect();
+    this.posX = this.offsetX = x + itemsDivRect.left;
+    this.posY = this.offsetY = y + itemsDivRect.top + window.scrollY;
 
     this.rect = e.getBoundingClientRect();
 
@@ -537,6 +536,46 @@ function spawnCarpetPopup() {
   spawnItem(carpet_popup);
 }
 
+/* Thanks to @esmiralha
+ * https://stackoverflow.com/a/7616484
+ */
+function hashPhoneNumber(string) {
+  let hash = 0;
+  for (const char of string) {
+    hash = (hash << 5) - hash + char.charCodeAt(0);
+    hash |= 0; // Constrain to 32bit integer
+  }
+
+  return hash;
+}
+
+const ALREADY_DIALED = {};
+
+const PHONE_NUMBERS = {
+  "-1874797587": [
+    `
+— Hello, you've probably dialed...<br/>
+— ...<br/>
+— ...no, you know what? You know how many people called me just <i>this week?</i><br/>
+— I can't take this anymore. I-I <i>won't</i> take this anymore!<br/>
+— I'm gonna go live in the woods! Goodbye, modern world! You were lost the moment we invented a way to be prank-called.<br/>
+— Thank you! Goodbye.<br/>
+`,
+    `
+Beep beep...the owner of the number you're trying to wish has "gone ga-ga"<br/>
+You may find him "living with the squirrels away from the evil phone."
+`,
+  ],
+  "-1986815161": "Ouch! The phone zapped you...",
+  1585645585: `
+— Hello! You're reaching us because you're a forgetful oaf?<br/>
+— Don't answer that, Toby. You just don't forget your head because it's attached to your neck, you know?<br/>
+— Any way, Tanner got on my case about the previous message where I just told you the password, so...<br/>
+— ...not doing that again! Figure it out yourself!<br/>
+— Hope you have a <i>wonderful</i> time waffling around on the clock for the password!
+`,
+};
+
 function spawnTelephone() {
   const telephone = new Item(
     "telephone",
@@ -574,6 +613,7 @@ function spawnTelephone() {
     <button class="dial-button" id="dial-0">0</button>
     <button class="dial-button" id="dial-OK">OK</button>
   </div>
+  <p id="dial-message"></p>
 </form>`,
     );
 
@@ -594,7 +634,30 @@ function spawnTelephone() {
     };
 
     const keypadSubmit = () => {
+      if (inputDial.value.length < 9) {
+        return;
+      }
+
       playAudio("assets/snd_keyOK.mp3");
+
+      const telephoneNumber = hashPhoneNumber(inputDial.value).toString();
+      inputDial.value = "";
+
+      const e = document.getElementById("dial-message");
+      const msg = PHONE_NUMBERS[telephoneNumber];
+      if (msg) {
+        if (Array.isArray(msg)) {
+          const idx = ALREADY_DIALED[telephoneNumber] || 0;
+          e.innerHTML = msg[idx];
+          if (idx < msg.length - 1) {
+            ALREADY_DIALED[telephoneNumber] = idx + 1;
+          }
+        } else {
+          e.innerHTML = msg;
+        }
+      } else {
+        e.innerText = "No response";
+      }
     };
 
     const keypadType = (k) => {
@@ -638,7 +701,7 @@ function spawnTelephone() {
 
     const keyOK = document.getElementById("dial-OK");
     keyOK.onclick = () => {
-      keypadHandler.bind("OK");
+      keypadHandler("OK");
     };
   });
 
@@ -741,7 +804,7 @@ function spawnSafeDoor() {
     "assets/img_safe_door.png",
     "A reinforced safe door",
     384,
-    1804,
+    1802,
   );
 
   safe_door.setGrabbable(false);
@@ -755,6 +818,22 @@ function spawnSafeDoor() {
   });
 
   spawnItem(safe_door);
+}
+
+function spawnClock() {
+  const clock = new Item("clock", "", "A clock", 248, 1550, 88, 80);
+
+  clock.setGrabbable(false);
+  clock.setGrabbedCallback(() => {
+    showImagePopup(
+      "Clock",
+      "assets/img_clock_popup.png",
+      "Clock with the hour hand pointing to six, minute hand to one and second hand to zero",
+      `
+The sun never sets on the far northeast, so you suppose a clock is useful to have.<br/>
+But time must have really snuck up on you...when did it get so late?`,
+    );
+  });
 }
 
 function addBunkerReceptionZone() {
@@ -783,6 +862,7 @@ function addBunkerReceptionZone() {
   spawnPottedPlant();
   spawnKeypad();
   spawnSafeDoor();
+  spawnClock();
 }
 
 function handleDial() {

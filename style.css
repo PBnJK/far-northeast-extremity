@@ -177,6 +177,7 @@ main {
 /* Items */
 #items {
   align-self: start;
+  width: 896px;
 }
 
 .item {
