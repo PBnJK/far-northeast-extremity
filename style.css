@@ -138,6 +138,13 @@ main {
   background-color: #eabc0d;
 }
 
+.popup-keypad {
+  width: 320px !important;
+
+  border: 2px solid #575757;
+  background-color: #8c8c8c;
+}
+
 #form-dial {
   display: flex;
 
@@ -156,6 +163,39 @@ main {
 
 .dial-button {
   width: 40px;
+}
+
+#form-code {
+  display: flex;
+
+  justify-content: center;
+  align-items: center;
+
+  flex-direction: column;
+
+  gap: 16px;
+}
+
+#input-code {
+  width: 120px;
+  pointer-events: none;
+
+  background-color: #81bb7a;
+  border: 2px solid #1b410b;
+
+  text-align: center;
+}
+
+.code-button {
+  width: 40px;
+
+  border: 1px solid #575757;
+  background-color: #8c8c8c;
+}
+
+.code-button:hover {
+  cursor: pointer;
+  background-color: #575757;
 }
 
 /* Fonts */

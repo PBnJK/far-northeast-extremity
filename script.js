@@ -18,6 +18,8 @@ const BASE_WINDOW_HEIGHT = 720;
 
 let popupCustomClass = "";
 
+let passwordSpookIntervalID = null;
+
 class Item {
   constructor(id, url, alt, x, y, w, h, z = 0) {
     this.id = id;
@@ -260,7 +262,7 @@ function showTextPopup(title, description, customClass) {
   popup.showModal();
 }
 
-function showImagePopup(title, url, alt, description) {
+function showImagePopup(title, url, alt, description, customClass) {
   const e = clearPopup();
 
   const h2 = document.createElement("h2");
@@ -282,11 +284,15 @@ function showImagePopup(title, url, alt, description) {
   e.appendChild(img);
   e.appendChild(p);
 
-  const dialog = document.getElementById("popup");
-  dialog.showModal();
+  if (customClass) {
+    popupCustomClass = customClass;
+    popup.classList.add(customClass);
+  }
+
+  popup.showModal();
 }
 
-function showCustomPopup(title, html) {
+function showCustomPopup(title, html, customClass) {
   const e = clearPopup();
   e.innerHTML = html;
 
@@ -297,8 +303,12 @@ function showCustomPopup(title, html) {
 
   e.prepend(h2);
 
-  const dialog = document.getElementById("popup");
-  dialog.showModal();
+  if (customClass) {
+    popupCustomClass = customClass;
+    popup.classList.add(customClass);
+  }
+
+  popup.showModal();
 }
 
 function addZone(id, description, url, alt) {
@@ -323,7 +333,9 @@ function addZone(id, description, url, alt) {
 
 function playAudio(src) {
   const audio = new Audio(src);
-  audio.play();
+  audio.play().catch((e) => {
+    console.log("Error playing audio: ", e);
+  });
 }
 
 function spawnItem(item) {
@@ -332,6 +344,10 @@ function spawnItem(item) {
 
 function destroyItem(id) {
   const e = findItem(id);
+  if (!e) {
+    return;
+  }
+
   e.remove();
 
   items.delete(id);
@@ -361,25 +377,6 @@ function spawnNormalPaper() {
   });
 
   spawnItem(normal_paper);
-}
-
-function spawnFrozenTombSign() {
-  const frozen_tomb_sign = new Item(
-    "frozen_tomb_sign",
-    "assets/img_frozen_tomb_sign.png",
-    'A sign. It reads: "Frozen Tomb," with a red arrow pointing left',
-    176,
-    320,
-    180,
-    180,
-  );
-
-  frozen_tomb_sign.setGrabbable(false);
-  frozen_tomb_sign.setFirstGrabbedCallback(() => {
-    window.location.href = "/scenes/30/";
-  });
-
-  spawnItem(frozen_tomb_sign);
 }
 
 function spawnSmallRock() {
@@ -479,8 +476,32 @@ function spawnManillaFolder() {
   manilla_folder.setGrabbable(false);
   manilla_folder.setGrabbedCallback(() => {
     showTextPopup(
-      "Results of",
-      `worrying
+      'Results of "██████ ████" Study',
+      `
+<sub>Lead Researcher Dr. Toby Ramos</sub><br/>
+<br/>
+The preliminary investigation on the "██████ ████" (MC-1994) was conducted on the 30th of October, ████.<br/>
+<br/>
+MC-1994, much like RC-1941, appears to have materialized without warning, entirely replacing the rooms
+that were previously there (a ██████████ and part of the outermost ████████████.)<br/>
+<br/>
+The exact date of its appearence is unknown, with some site staff reporting that it "snuck up on me"
+(see █████████, p. <b>47</b>) or that they "didn't even notice it was around the corner" (as per p.
+<b>98</b> of Dr. Gallagher's report.) The realization of this fact seems to cause considerable mental
+anguish. Further research is needed.<br/>
+<br/>
+<h2>Subsection A. The Room</h2><br/>
+MC-1994 itself is not noteworthy, and although a security door has been installed as a security measure, it appears
+to show no intention of expanding any further than its currently occupied 10x8x████m area. The only real anomaly
+can be found in the PA speakers which have, despite electricity being cut off on the room, continually played the
+song "███ █ ████ ███ █████████ ██ ███" over and over and...<br/>
+<br/>
+(The rest of the document is redacted beyond comprehension. The very ending, however, is still legible:)<br/>
+<br/>
+For further enquiries, please contact Dr. Ramos on the internal phone line at ████-2512.
+<br/>
+
+
 `,
     );
   });
@@ -571,8 +592,29 @@ You may find him "living with the squirrels away from the evil phone."
 — Hello! You're reaching us because you're a forgetful oaf?<br/>
 — Don't answer that, Toby. You just don't forget your head because it's attached to your neck, you know?<br/>
 — Any way, Tanner got on my case about the previous message where I just told you the password, so...<br/>
-— ...not doing that again! Figure it out yourself!<br/>
+— ...not doing that again! Figure it out yourself! This is technically the military, you know?<br/>
 — Hope you have a <i>wonderful</i> time waffling around on the clock for the password!
+`,
+  "-1733595729": `
+A message trapped on copper wires:<br/>
+<br/>
+— ...old him it's crazy, right? How he wrote that and didn't even bat an eye?<br/>
+— Uh-huh.<br/>
+— So then I looked into it, and everyone was just sort of...<br/>
+— Sort of—?<br/>
+— Sort of wall-eyed, right? Like, I pointed it out, and they were like "huh, I didn't even notice."<br/>
+— Really? Everyone?<br/>
+— Yeah! Dr. Ramos, Dr. Gallaghere—even Dixie! Like what's up with that? How did they write t-that the room is—<br/>
+— ...yeah?<br/>
+— No, yeah. Just, uh, Tanner is having me redact it out. So I shouldn't, y'know, say it on the line. R-really, I should...I should go. Bye Fifi.<br/>
+— Bye bottle-bottom. Don't let the scary room bite.<br/>
+<br/>
+(Beep beep beep...)
+`,
+  "-286177235": `
+"Beep! You tried reachi—wait, crap, I did it wrong! Again! Ahem...hi, you tried callin—reaching Fi—UGH! I'm BUSY! Message after beep! BEEP!!!"
+<br/>
+— Toby is in cahoots with that thing that dumb idiot. We need to leave <i>today</i>. Please answer as soon as possible.
 `,
 };
 
@@ -591,7 +633,7 @@ function spawnTelephone() {
   telephone.setGrabbedCallback(() => {
     showCustomPopup(
       "Dial a number",
-      `<form id="form-dial" onsubmit="return handleDial();">
+      `<form id="form-dial" onsubmit="return false;">
   <input id="input-dial" name="input-dial" type="text" readonly />
   <div class="dial-keypad">
     <button class="dial-button" id="dial-1">1</button>
@@ -688,7 +730,6 @@ function spawnTelephone() {
 
     for (let i = 0; i < 10; ++i) {
       const e = document.getElementById("dial-" + i);
-      console.log("dial-" + i);
       e.onclick = () => {
         keypadHandler(i.toString());
       };
@@ -721,7 +762,6 @@ function spawnStickyNote() {
   sticky_note.setFirstGrabbedCallback(() => {
     spawnPosterPopup();
     spawnCarpetPopup();
-    spawnTelephone();
   });
   sticky_note.setGrabbedCallback(() => {
     showTextPopup(
@@ -730,7 +770,9 @@ function spawnStickyNote() {
 ...just trawl over the corners of your mind and you'll remember it.<br/><br/>
 (on the back)<br/>
 Tanner's been all over me with this op-sec stuff, says I'm on thin ice<br/>
-So throw this out when you read it! Seriously!!!
+So throw this out when you read it! Seriously!!!<br/>
+<br/>
+— Your bud Dumas.
 `,
       "popup-sticky-note",
     );
@@ -793,7 +835,102 @@ function spawnKeypad() {
   );
 
   keypad.setGrabbable(false);
-  keypad.setGrabbedCallback(() => {});
+  keypad.setGrabbedCallback(() => {
+    showCustomPopup(
+      "",
+      `<form id="form-code" onsubmit="return false;">
+  <input id="input-code" name="input-code" type="text" readonly />
+  <div class="code-keypad">
+    <button class="code-button" id="code-1">1</button>
+    <button class="code-button" id="code-2">2</button>
+    <button class="code-button" id="code-3">3</button>
+  </div>
+  <div class="code-keypad">
+    <button class="code-button" id="code-4">4</button>
+    <button class="code-button" id="code-5">5</button>
+    <button class="code-button" id="code-6">6</button>
+  </div>
+  <div class="code-keypad">
+    <button class="code-button" id="code-7">7</button>
+    <button class="code-button" id="code-8">8</button>
+    <button class="code-button" id="code-9">9</button>
+  </div>
+  <div class="code-keypad">
+    <button class="code-button" id="code-X">X</button>
+    <button class="code-button" id="code-0">0</button>
+    <button class="code-button" id="code-OK">=></button>
+  </div>
+</form>`,
+      "popup-keypad",
+    );
+
+    const inputCode = document.getElementById("input-code");
+
+    const codeDelete = () => {
+      if (inputCode.value.length === 0) {
+        return;
+      }
+
+      inputCode.value = inputCode.value.slice(0, -1);
+      playAudio("assets/snd_code9.mp3");
+    };
+
+    const codeSubmit = () => {
+      if (inputCode.value.length < 4) {
+        return;
+      }
+
+      if (hashPhoneNumber(inputCode.value) === 1540190) {
+        playAudio("assets/snd_codeOK.mp3");
+        destroyItem("door");
+
+        addTombwaysZone();
+      } else {
+        playAudio("assets/snd_codeX.mp3");
+      }
+
+      inputCode.value = "";
+    };
+
+    const codeType = (k) => {
+      if (inputCode.value.length >= 4) {
+        return;
+      }
+
+      inputCode.value += k;
+      playAudio(`assets/snd_code${k}.mp3`);
+    };
+
+    const codeHandler = (k) => {
+      switch (k) {
+        case "X":
+          codeDelete();
+          break;
+        case "OK":
+          codeSubmit();
+          break;
+        default:
+          codeType(k);
+      }
+    };
+
+    for (let i = 0; i < 10; ++i) {
+      const e = document.getElementById("code-" + i);
+      e.onclick = () => {
+        codeHandler(i.toString());
+      };
+    }
+
+    const codeX = document.getElementById("code-X");
+    codeX.onclick = () => {
+      codeHandler("X");
+    };
+
+    const codeOK = document.getElementById("code-OK");
+    codeOK.onclick = () => {
+      codeHandler("OK");
+    };
+  });
 
   spawnItem(keypad);
 }
@@ -821,26 +958,42 @@ function spawnSafeDoor() {
 }
 
 function spawnClock() {
-  const clock = new Item("clock", "", "A clock", 248, 1550, 88, 80);
+  const clock = new Item("clock", "", "A wall clock", 248, 1550, 88, 80);
 
   clock.setGrabbable(false);
   clock.setGrabbedCallback(() => {
     showImagePopup(
       "Clock",
       "assets/img_clock_popup.png",
-      "Clock with the hour hand pointing to six, minute hand to one and second hand to zero",
+      "Clock with the hour hand pointing to eleven, minute hand to siz and second hand to zero",
       `
 The sun never sets on the far northeast, so you suppose a clock is useful to have.<br/>
 But time must have really snuck up on you...when did it get so late?`,
     );
   });
+
+  spawnItem(clock);
+}
+
+function spawnDoor() {
+  const door = new Item(
+    "door",
+    "assets/img_reception_door.png",
+    'A big bulky door. A big yellow sign says "restricted."',
+    648,
+    1580,
+  );
+
+  door.setGrabbable(false);
+
+  spawnItem(door);
 }
 
 function addBunkerReceptionZone() {
   spawnBunkerHatch();
   playAudio("assets/snd_clue_stinger.mp3");
 
-  /* In case they didn't pull off the sign paper */
+  /* In case you didn't pull off the sign paper */
   document.title = "The FNESB";
 
   addZone(
@@ -863,15 +1016,136 @@ function addBunkerReceptionZone() {
   spawnKeypad();
   spawnSafeDoor();
   spawnClock();
+  spawnDoor();
+  spawnTelephone();
 }
 
-function handleDial() {
-  return false;
+function addTombPartyZone() {
+  addZone(
+    "tomb_party",
+    "All she ever wanted...",
+    "assets/img_bg_tomb_party.png",
+    "A big old party",
+  );
+
+  const bgm = new Audio("assets/mus_all_i_want.mp3");
+  bgm.loop = true;
+  bgm.volume = 0.0;
+
+  bgm.play();
+
+  window.addEventListener("scroll", () => {
+    const normalized = Math.min(1.0, Math.max(0.0, window.scrollY / 3677.0));
+    bgm.volume = (10.0 ** normalized - 1.0) / 9.0;
+  });
+}
+
+function passwordSpook() {
+  if (window.scrollY > 400) {
+    return;
+  }
+
+  playAudio("assets/snd_mariah.mp3");
+  clearInterval(passwordSpookIntervalID);
+
+  addTombPartyZone();
+}
+
+function spawnTombNote() {
+  const tomb_note = new Item(
+    "tomb_note",
+    "assets/img_sticky_note.png",
+    "A sticky note",
+    448,
+    3072,
+  );
+
+  tomb_note.setGrabbable(false);
+  tomb_note.setFirstGrabbedCallback(() => {
+    const entranceImage = document.querySelector("#entrance .inner-image");
+    entranceImage.setAttribute("src", "assets/img_bg_entrance_christmas.png");
+
+    const entranceDescription = document.querySelector(
+      "#entrance .inner-description",
+    );
+    entranceDescription.innerText = "Christmas";
+
+    const topImage = document.querySelector("#reception_top .inner-image");
+    topImage.setAttribute("src", "assets/img_bg_reception_top_christmas.png");
+
+    const topDescription = document.querySelector(
+      "#reception_top .inner-description",
+    );
+    topDescription.innerText = "For";
+
+    const bottomImage = document.querySelector(
+      "#reception_bottom .inner-image",
+    );
+    bottomImage.setAttribute(
+      "src",
+      "assets/img_bg_reception_bottom_christmas.png",
+    );
+
+    const bottomDescription = document.querySelector(
+      "#reception_bottom .inner-description",
+    );
+    bottomDescription.innerText = "Want";
+
+    const stairwellDescription = document.querySelector(
+      "#stairwell .inner-description",
+    );
+    stairwellDescription.innerText = "I";
+
+    const tombwaysDescription = document.querySelector(
+      "#tombways .inner-description",
+    );
+    tombwaysDescription.innerText = "All";
+
+    destroyItem("normal_paper");
+    destroyItem("small_rock");
+    destroyItem("entrance_button");
+    destroyItem("bunker_hatch");
+    destroyItem("keypad");
+    destroyItem("safe_door");
+
+    passwordSpookIntervalID = setInterval(passwordSpook, 1000);
+  });
+  tomb_note.setGrabbedCallback(() => {
+    showTextPopup(
+      "You forgot",
+      `You forgot the<br/>
+password<br/>
+<br/>
+<br/>
+up there.
+`,
+      "popup-sticky-note",
+    );
+  });
+
+  spawnItem(tomb_note);
+}
+
+function addTombwaysZone() {
+  addZone(
+    "stairwell",
+    "Further down...",
+    "assets/img_bg_stairwell.png",
+    "A scary stairwell...",
+  );
+
+  addZone(
+    "tombways",
+    "A door",
+    "assets/img_bg_tombways.png",
+    "A christmasy door in a tomb.",
+  );
+
+  spawnTombNote();
 }
 
 function init() {
   spawnNormalPaper();
-  spawnFrozenTombSign();
   spawnSmallRock();
   spawnEntranceButton();
 
