@@ -292,6 +292,57 @@ function showImagePopup(title, url, alt, description, customClass) {
   popup.showModal();
 }
 
+function showDialoguePopup(name, url, alt, text, qA, rA, qB, rB) {
+  const e = clearPopup();
+
+  const h2 = document.createElement("h2");
+  h2.innerHTML = name;
+  h2.id = "popup-title";
+  h2.classList.add("national-park");
+
+  const img = document.createElement("img");
+  img.setAttribute("src", url);
+  img.setAttribute("alt", alt);
+  img.id = "popup-image";
+
+  const p = document.createElement("p");
+  p.innerHTML = text;
+  p.id = "popup-description";
+  p.classList.add("national-park");
+
+  const btn1 = document.createElement("button");
+  btn1.innerText = qA;
+  btn1.id = "popup-qa";
+  btn1.classList.add("popup-question");
+
+  btn1.onclick = () => {
+    p.innerHTML = rA;
+
+    e.removeChild(btn1);
+    e.removeChild(btn2);
+  };
+
+  const btn2 = document.createElement("button");
+  btn2.innerText = qB;
+  btn2.id = "popup-qb";
+  btn2.classList.add("popup-question");
+
+  btn2.onclick = () => {
+    p.innerHTML = rB;
+
+    e.removeChild(btn1);
+    e.removeChild(btn2);
+  };
+
+  e.appendChild(h2);
+  e.appendChild(img);
+  e.appendChild(p);
+  e.appendChild(btn1);
+  e.appendChild(btn2);
+
+  popup.showModal();
+}
+
 function showCustomPopup(title, html, customClass) {
   const e = clearPopup();
   e.innerHTML = html;
@@ -446,10 +497,9 @@ function spawnReceptionDeskPapers() {
       "MEMO",
       `
 Don't look at the date of this memo.<br/>
-Don't look at the date on yesterday's either.<br/>
-If you get any more memos with my name on them, they're not me.<br/><br/>
+Don't look at the date on yesterday's either.<br/><br/>
 
-You're all officially discharged and are urged to leave immediately.<br/><br/>
+You're all officially discharged and are urged to go. Gather below. You know where.<br/><br/>
 
 Don't bother packing.<br/><br/>
 
@@ -498,11 +548,11 @@ song "███ █ ████ ███ █████████ ██ �
 <br/>
 (The rest of the document is redacted beyond comprehension. The very ending, however, is still legible:)<br/>
 <br/>
-For further enquiries, please contact Dr. Ramos on the internal phone line at ████-2512.
+For further enquiries, please contact Dr. Ramos on the internal phone line at ████-2512.<br/>
 <br/>
-
-
-`,
+(scribbled on a paper note clipped to the folder:)<br/>
+P.S.: The "old line" doesn't work anymore. What I call "simple and easy to remember," the institution calls
+"unprofessional." So no more calling me on the ol' all-naught.`,
     );
   });
 
@@ -573,6 +623,16 @@ function hashPhoneNumber(string) {
 const ALREADY_DIALED = {};
 
 const PHONE_NUMBERS = {
+  "-2035179091": `
+— Well, hello. Ramos speaking. You found my secret little line. Congratulations! Hopefully you've found it before everyone...<br/>
+— Eh, I suppose the writing's been on the wall for quite a while now. "Forgetful oaf" and all that.<br/>
+— Guess they're...tying the loose end.<br/>
+— ...but really, they should have at least been more subtle about it! It's unfair to <i>me</i>!<br/>
+— "What's it gonna be with Toby?"
+— "Oh, that's not enough for him."
+— "It's gotta be me the one to do it," so on, so forth...
+— ...
+— Oh well, we'll see. Toby out.`,
   "-1874797587": [
     `
 — Hello, you've probably dialed...<br/>
@@ -580,12 +640,10 @@ const PHONE_NUMBERS = {
 — ...no, you know what? You know how many people called me just <i>this week?</i><br/>
 — I can't take this anymore. I-I <i>won't</i> take this anymore!<br/>
 — I'm gonna go live in the woods! Goodbye, modern world! You were lost the moment we invented a way to be prank-called.<br/>
-— Thank you! Goodbye.<br/>
-`,
+— Thank you! Goodbye.`,
     `
 Beep beep...the owner of the number you're trying to wish has "gone ga-ga"<br/>
-You may find him "living with the squirrels away from the evil phone."
-`,
+You may find him "living with the squirrels away from the evil phone."`,
   ],
   "-1986815161": "Ouch! The phone zapped you...",
   1585645585: `
@@ -593,8 +651,7 @@ You may find him "living with the squirrels away from the evil phone."
 — Don't answer that, Toby. You just don't forget your head because it's attached to your neck, you know?<br/>
 — Any way, Tanner got on my case about the previous message where I just told you the password, so...<br/>
 — ...not doing that again! Figure it out yourself! This is technically the military, you know?<br/>
-— Hope you have a <i>wonderful</i> time waffling around on the clock for the password!
-`,
+— Hope you have a <i>wonderful</i> time waffling around on the clock for the password!`,
   "-1733595729": `
 A message trapped on copper wires:<br/>
 <br/>
@@ -604,18 +661,21 @@ A message trapped on copper wires:<br/>
 — Sort of—?<br/>
 — Sort of wall-eyed, right? Like, I pointed it out, and they were like "huh, I didn't even notice."<br/>
 — Really? Everyone?<br/>
-— Yeah! Dr. Ramos, Dr. Gallaghere—even Dixie! Like what's up with that? How did they write t-that the room is—<br/>
+— Yeah! Dr. Ramos, Dr. Gallagher—even Dixie! Like what's up with that? How did they write t-that the room is—<br/>
 — ...yeah?<br/>
 — No, yeah. Just, uh, Tanner is having me redact it out. So I shouldn't, y'know, say it on the line. R-really, I should...I should go. Bye Fifi.<br/>
 — Bye bottle-bottom. Don't let the scary room bite.<br/>
 <br/>
-(Beep beep beep...)
+(Beep beep beep...)`,
+  "-434185785": `
+— I'll call it MC-1994. "Missing Christmas." My burden to bear. I wonder what it'll replace it with...?<br/>
+— No matter. Let's just hope it's got its kicks. Don't look up, Doctor. Not if you want to remember<br/>
+— I won't.
 `,
   "-286177235": `
-"Beep! You tried reachi—wait, crap, I did it wrong! Again! Ahem...hi, you tried callin—reaching Fi—UGH! I'm BUSY! Message after beep! BEEP!!!"
+"Beep! You tried reachi—wait, crap, I did it wrong! Again! Ahem...hi, you tried calling—reaching—UGH! I'm BUSY! Message after beep! BEEP!!!"<br/>
 <br/>
-— Toby is in cahoots with that thing that dumb idiot. We need to leave <i>today</i>. Please answer as soon as possible.
-`,
+— Toby's found out. We need to act <i>now</i>. Gather at the agreed-upon place.`,
 };
 
 function spawnTelephone() {
@@ -1020,13 +1080,247 @@ function addBunkerReceptionZone() {
   spawnTelephone();
 }
 
+function spawnDumas() {
+  const dumas = new Item(
+    "dumas",
+    "assets/anim_dumas.gif",
+    "An embarassed-looking elephant",
+    320,
+    3800,
+  );
+
+  dumas.setGrabbable(false);
+  dumas.setGrabbedCallback(() => {
+    showDialoguePopup(
+      "Dumas",
+      "assets/img_dumas_closeup.png",
+      "Dumas the Elephant",
+      "(Oh jeez, she's really going at him...)",
+      "What happened?",
+      `
+Oh hi, intern! Well, we've been putting together a birthday party for Dr. Ramos over here for a while, but he...<br/>
+Well, he thought it was something a bit more <i>sinister.</i><br/>
+Now Fifi is really digging into him...<br/>
+<br/>
+You gotta have a clear mind when working with the stuff we do, you know?<br/>
+<br/>
+Though maybe asking Toby to have a "clear mind" is a bit too much for the poor fellow. Can you believe that he forgot
+that today's his birthday? Unbelievable, that...<br/>
+<br/>
+Someone even wrote it outside in big letters! Which I think might be a security violation, but never mind that, because
+he didn't even bat an eye! Coming in here all "what's the occasion, friends?"<br/>
+<br/>
+What a guy...
+`,
+      "Merry Christmas!",
+      "Thanks! No idea what that is. But thanks!!",
+    );
+  });
+
+  spawnItem(dumas);
+}
+
+function spawnRamos() {
+  const ramos = new Item(
+    "ramos",
+    "assets/anim_ramos.gif",
+    "An embarassed-looking kangaroo thing",
+    400,
+    3816,
+  );
+
+  ramos.setGrabbable(false);
+  ramos.setGrabbedCallback(() => {
+    showDialoguePopup(
+      "Ramos",
+      "assets/img_ramos_closeup.png",
+      "Ramos the Kangaroo Thing",
+      "(You've really done it this time, Robert, you've really done it...",
+      "What's happened?",
+      "O-oh, hey there, intern! Don't worry about it, haha...just ol' scatterbrain Toby! Whole—erm, birthday surprise for me and I just forgot, haha.",
+      "Merry Christmas!",
+      `
+...<br/>
+...yeah. Yeah, Merry Christmas to you...too...<br/>
+`,
+    );
+  });
+
+  spawnItem(ramos);
+}
+
+function spawnFifi() {
+  const fifi = new Item(
+    "fifi",
+    "assets/anim_fifi.gif",
+    "An angry-looking blonde toad-sheep thing",
+    472,
+    3812,
+  );
+
+  fifi.setGrabbable(false);
+  fifi.setGrabbedCallback(() => {
+    showDialoguePopup(
+      "Fifi",
+      "assets/img_fifi_closeup.png",
+      "Fifi the Toad-Sheep",
+      "Dr. Ramos! Respectfully, you're dumb and got bricks for brains!! You thought we were going to do WHAT? Dumb dumb silly dumb!",
+      "What happened?",
+      `
+Oh what DIDN'T intern?! Dr. Brainiac over here FORGOT his birthday, got the size of a room on a report WRONG AND, bless his heart, thought we were going to KILL HIM???<br/>
+I mean, for—we're doing SERIOUS research over here, right? But then he puts down that this room—THIS room, the one we're standing on—get this (I've got it written down here,)
+<center>"occupies a 10 by 8 by <i>10000</i> meters area."</center><br/>
+<br/>
+SPOT THE ERROR INTERN!! I'll give you THREE CHANCES!!!!!<br/>
+<br/>
+You're 8 years my senior Dr. Ramos! How am I meant to look up to you if you can't even look up inside this room and realize maybe you dialed in the size wrong?<br/>
+<br/>
+<i>Dumb.</i>
+`,
+      "Merry Christmas!",
+      "What? Sorry intern, I'm given my boss a talking to. Dr., respectfully, I'm surprised your weird coat is on the right side.",
+    );
+  });
+
+  spawnItem(fifi);
+}
+
+function spawnTanner() {
+  const tanner = new Item(
+    "tanner",
+    "assets/anim_tanner.gif",
+    "A turtle in a suit",
+    640,
+    3812,
+    64,
+    128,
+    1,
+  );
+
+  tanner.setGrabbable(false);
+  tanner.setGrabbedCallback(() => {
+    showDialoguePopup(
+      "Tanner",
+      "assets/img_tanner_closeup.png",
+      "Tanner the Turtle",
+      "...",
+      "H-hey boss...",
+      `
+...hm? Oh, hello intern. How are you liking the party?<br/>
+<br/>
+...<br/>
+<br/>
+You know, I myself am not much for parties. But Dr. Ramos...for better or for worse,
+he needed this. He works too hard that one.<br/>
+<br/>
+Sometimes too hard for his own good.
+`,
+      "Merry Christmas!",
+      "I haven't the faintest idea of what that is. Some special occasion?",
+    );
+  });
+
+  spawnItem(tanner);
+}
+
+function spawnDancer1() {
+  const dancer_1 = new Item(
+    "dancer_1",
+    "assets/anim_dancer_1.gif",
+    "A sock puppet guy breaking it down",
+    720,
+    3800,
+    64,
+    128,
+    1,
+  );
+
+  dancer_1.setGrabbable(false);
+  dancer_1.setGrabbedCallback(() => {
+    showDialoguePopup(
+      "Some Guy",
+      "assets/img_dancer_1_closeup.png",
+      "A wild, vaguely antropomorphic dancer",
+      "WOO YEAH!!! PART-AY!!!!!",
+      "What's up?",
+      `
+What's "up" is the new "down," man! You can't let 'em get you down!!<br/>
+Dance 'till your heart stops, dance 'till the beat drops!!<br/>
+You hearin' this? This BEAT?! Fresh, fresh! The glockenspiel is the new 808 man, I'm TELLING YOU!<br/>
+<br/>
+Ring ring! That's the sound of the police!!! Help!!! They are arresting me!!! They're taking me away...<br/>
+...for being TOO GROOVY YEAAAAAAAAAHHH!!!!!!<br/>
+Touch-tone! Touch-tone telephone!!<br/>
+<br/>
+(...)<br/>
+<br/>
+(He seems to be matching the beat by ondulating his shoulders...)
+`,
+      "Merry Christmas!",
+      `
+Marry? No thanks! I'm already married...to the DANCE FLOOR!<br/>
+Call me ENGAGED the way I be ENGAGING IN SOME FUNKY STUFF on this here HARDWOOD PANELLIN'<br/>
+<br/>
+"X Miss?" Miss ME with that stuff MAN<br/>
+<br/>
+<i>...X</i><br/>
+<br/>
+But dude. Dudette. Dudaliciousness King. I'm not here to answer questions, DOG.<br/>
+I'm only an ENCYCLOPEDIA when I be ENCYCLIN' the BEAT-O-PEDIA<br/>
+<br/>
+<i>...if you just so happen to be catchin' the drift (little toots I've been letting out the whole time)</i><br/>
+<br/>
+But yeah, man, ya gotta ask the PHONE. Just don't PHONE IT IN on DA DANCE FLOOR YEAHHHHHH.<br/>
+<br/>
+Give me an X!<br/>
+Give me an M!<br/>
+Give me an A!<br/>
+Give me an S!<br/>
+<br/>
+ASK IT Dudevarious Jr. Ya gotta ASK IT! ASK IT!
+`,
+    );
+  });
+
+  spawnItem(dancer_1);
+}
+
+function spawnFrozenTombLink() {
+  const frozen_tomb_link = new Item(
+    "frozen_tomb_link",
+    "",
+    "Door to the frozen tomb",
+    576,
+    3700,
+    142,
+    168,
+  );
+
+  frozen_tomb_link.setGrabbable(false);
+  frozen_tomb_link.setFirstGrabbedCallback(() => {
+    window.location.href = "/scenes/30/";
+  });
+
+  spawnItem(frozen_tomb_link);
+}
+
 function addTombPartyZone() {
+  const note = findItem("tomb_note");
+  note.moveTo(448, 3232);
+
   addZone(
     "tomb_party",
     "All she ever wanted...",
     "assets/img_bg_tomb_party.png",
     "A big old party",
   );
+
+  spawnDumas();
+  spawnRamos();
+  spawnFifi();
+  spawnTanner();
+  spawnDancer1();
+  spawnFrozenTombLink();
 
   const bgm = new Audio("assets/mus_all_i_want.mp3");
   bgm.loop = true;
@@ -1048,6 +1342,7 @@ function passwordSpook() {
   playAudio("assets/snd_mariah.mp3");
   clearInterval(passwordSpookIntervalID);
 
+  destroyItem("tomb_door");
   addTombPartyZone();
 }
 
@@ -1058,6 +1353,9 @@ function spawnTombNote() {
     "A sticky note",
     448,
     3072,
+    null,
+    null,
+    1,
   );
 
   tomb_note.setGrabbable(false);
@@ -1114,7 +1412,7 @@ function spawnTombNote() {
     showTextPopup(
       "You forgot",
       `You forgot the<br/>
-password<br/>
+answer<br/>
 <br/>
 <br/>
 up there.
@@ -1124,6 +1422,21 @@ up there.
   });
 
   spawnItem(tomb_note);
+}
+
+function spawnTombDoor() {
+  const tomb_door = new Item(
+    "tomb_door",
+    "assets/img_tombways_door.png",
+    "Wooden door",
+
+    360,
+    2940,
+  );
+
+  tomb_door.setGrabbable(false);
+
+  spawnItem(tomb_door);
 }
 
 function addTombwaysZone() {
@@ -1142,6 +1455,7 @@ function addTombwaysZone() {
   );
 
   spawnTombNote();
+  spawnTombDoor();
 }
 
 function init() {
